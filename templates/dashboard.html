@@ -1,0 +1,237 @@
+{% extends "dashboard_base.html" %}
+
+{% block title %}Prime CS & Advisory Services - Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="company-branding">
+        <div class="company-logo"><img src="{{ url_for('static', filename='Favicon.png') }}" alt="Company Logo"></div>
+        <div class="company-info">
+          <h1>Prime CS & Advisory Services</h1>
+          <div class="company-tagline">Professional Company Secretary Services</div>
+        </div>
+      </div>
+
+      <div class="user-section">
+        <div class="user-info">
+          <div class="welcome-text">Welcome, {{ session['user']['name'] }}</div>
+          {% if session['user'].get('is_admin') %}
+            <div class="user-role">👑Administrator</div>
+          {% else %}
+            <div class="user-role" style="background: linear-gradient(135deg, #059669, #047857);">
+              👤 Client
+            </div>
+          {% endif %}
+        </div>
+        <a href="/logout" class="logout-btn">🚪Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid (Admin only) -->
+  {% if session['user'].get('is_admin') %}
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ complaints|length }}</div>
+      <div class="stat-label">Total Complaints</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ complaints|selectattr('resolved', 'equalto', True)|list|length }}</div>
+      <div class="stat-label">Resolved Issues</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ complaints|selectattr('resolved', 'equalto', False)|list|length }}</div>
+      <div class="stat-label">Pending Reviews</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">
+        {% if complaints|length > 0 %}
+          {{ ((complaints|selectattr('resolved', 'equalto', True)|list|length / complaints|length) * 100)|round|int }}%
+        {% else %}
+          0%
+        {% endif %}
+      </div>
+      <div class="stat-label">Resolution Rate</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="main-content">
+
+    <!-- Submit Complaint Form (Non-admin) -->
+    {% if not session['user'].get('is_admin') %}
+    <div class="submit-section">
+      <div class="section-header">
+        <div class="section-icon">📝</div>
+        <div>
+          <h2 class="section-title">Submit New Complaint</h2>
+          <p class="section-subtitle">Report issues or concerns regarding our services</p>
+        </div>
+      </div>
+      <form id="complaintForm">
+        <div class="form-group">
+          <label class="form-label" for="complaint">Describe your complaint</label>
+          <textarea id="complaint" name="complaint" class="form-textarea"
+                    placeholder="Provide detailed information..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">📤 Submit Complaint</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Complaints Table -->
+    <div class="complaints-section">
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <div>
+          <h2 class="section-title">Client Complaints Management</h2>
+          <p class="section-subtitle">Monitor and manage all client service requests</p>
+        </div>
+      </div>
+
+      {% if complaints %}
+      <div class="table-container">
+        <table class="complaints-table">
+          <thead>
+            <tr>
+              <th>Client Email</th>
+              <th>Complaint Details</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in complaints %}
+            <tr data-id="{{ c._id }}">
+              <td class="email-cell">{{ c.user_email or c.email }}</td>
+              <td class="complaint-text">{{ c.complaint }}</td>
+              <td class="status-cell">
+                {% if c.get('resolved', False) %}
+                  <span class="status-badge status-resolved"><span class="resolved-tick">✓</span> Resolved</span>
+                {% else %}
+                  <span class="status-badge status-pending">Pending</span>
+                {% endif %}
+              </td>
+              <td class="actions-cell">
+                {% if session['user'].get('is_admin') or c.user_email == session['user']['email'] %}
+                  {% if session['user'].get('is_admin') %}
+                    {% if c.get('resolved', False) %}
+                      <button type="button" class="btn btn-secondary btn-sm toggle-status" data-id="{{ c._id }}" data-resolved="true">🔄 Reopen</button>
+                    {% else %}
+                      <button type="button" class="btn btn-success btn-sm toggle-status" data-id="{{ c._id }}" data-resolved="false">✅ Resolve</button>
+                    {% endif %}
+                  {% endif %}
+                  <button type="button" class="btn btn-warning btn-sm edit-btn" data-id="{{ c._id }}" data-email="{{ c.user_email or c.email }}" data-complaint="{{ c.complaint|e }}">✏️ Edit</button>
+                  <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="{{ c._id }}">🗑️ Delete</button>
+                {% else %}
+                  <span style="color: #999; font-style: italic;">No actions available</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="no-complaints">
+        <div class="emoji">📋</div>
+        <div>No complaints found.</div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-header">
+      <h3 id="editModalTitle">Edit Complaint</h3>
+      <button class="close" id="editModalClose" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="editForm" method="POST" onsubmit="return false;">
+        <input type="hidden" id="editComplaintId" name="complaint_id">
+        <div class="form-group">
+          <label for="editEmail">Client Email</label>
+          <input type="email" id="editEmail" name="email" readonly>
+        </div>
+        <div class="form-group">
+          <label for="editComplaint">Complaint Details</label>
+          <textarea id="editComplaint" name="complaint" rows="4" class="form-textarea" required></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="editCancelBtn">❌ Cancel</button>
+      <button type="button" class="btn btn-primary" id="editSubmitBtn">💾 Update Complaint</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const complaintForm = document.getElementById("complaintForm");
+  if (!complaintForm) return;
+
+  complaintForm.addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const complaintText = document.getElementById("complaint").value.trim();
+    if (complaintText.length < 10) {
+      alert("Complaint must be at least 10 characters long.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/submit_complaint_ajax", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ complaint: complaintText })
+      });
+
+      const result = await response.json();
+      if (!result.success) {
+        alert(result.message || "Failed to submit complaint.");
+        return;
+      }
+
+      document.getElementById("complaint").value = "";
+
+      const tableBody = document.querySelector(".complaints-table tbody");
+      if (tableBody) {
+        const c = result.complaint;
+        const newRow = document.createElement("tr");
+        newRow.dataset.id = c._id;
+        newRow.innerHTML = `
+          <td class="email-cell">${c.user_email}</td>
+          <td class="complaint-text">${c.complaint}</td>
+          <td class="status-cell"><span class="status-badge status-pending">Pending</span></td>
+          <td class="actions-cell">
+            <button type="button" class="btn btn-warning btn-sm edit-btn" data-id="${c._id}" data-email="${c.user_email}" data-complaint="${c.complaint}">✏️ Edit</button>
+            <button type="button" class="btn btn-danger btn-sm delete-btn" data-id="${c._id}">🗑️ Delete</button>
+          </td>
+        `;
+        tableBody.prepend(newRow);
+      } else {
+        location.reload();
+      }
+
+      alert("Complaint submitted successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred while submitting the complaint.");
+    }
+  });
+});
+</script>
+{% endblock %}
