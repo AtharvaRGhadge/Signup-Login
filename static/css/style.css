@@ -1,0 +1,144 @@
+/* Global reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+/* Page background */
+body {
+  background: #f2f4f7;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+
+}
+
+/* Centered white card */
+.container {
+  background: #fff;
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Headings */
+h1, h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #2a3f5f;
+}
+
+/* Form fields */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 2px solid black;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  background: darkcyan;
+  color: #fff;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #357ab8;
+}
+
+/* Complaints list for admin */
+ul {
+  list-style: none;
+  margin-top: 1rem;
+}
+
+ul li {
+  background: #f8f9fb;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid #4a90e2;
+}
+
+/* Logout link */
+a {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: #4a90e2;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.complaints-table {
+  width: 100%;
+  border-collapse: separate;
+  margin-top: 1rem;
+}
+
+.complaints-table th,
+.complaints-table td {
+  border: 5px solid #333; /* visible darker border */
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.complaints-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.complaints-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.complaints-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.logout-btn {
+  position: fixed;        /* always stays in view */
+  top: 20px;              /* distance from top */
+  right: 20px;            /* distance from right */
+  background-color: #ff4d4d; /* red logout button */
+  color: white;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.logout-btn:hover {
+  background-color: #ff0000;
+}
+
+
