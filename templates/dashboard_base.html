@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %}</title>
+
+  <!-- Dashboard CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  {% if session.get('logged_in') %}
+    <a href="/logout" class="logout-btn">Logout</a>
+  {% endif %}
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Dashboard JS -->
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
